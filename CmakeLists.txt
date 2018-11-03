@@ -1,0 +1,57 @@
+# efiler/CMakeLists.txt
+
+cmake_minimum_required(VERSION 3.8)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+set(PROJECT Efiler)
+project(${PROJECT})
+
+set(FLTK_DIR /Code/fltk)
+include_directories(${FLTK_DIR} ${FLTK_DIR}/build)
+link_directories(${FLTK_DIR}/build/lib/Debug)
+if(win32)
+add_definitions(-DWIN32)
+endif()
+
+set(SOURCES
+	EDE_Browser.cpp
+	EDE_DirTree.cpp
+	EDE_FileDetailsView.cpp
+	EDE_FileIconView.cpp
+	efiler.cpp
+	fileops.cpp
+	filesystem.cpp
+	Flu_Wrap_Group.cpp
+	mailcap.cpp
+	OpenWith.cpp
+	Properties.cpp
+	Util.cpp
+)
+
+set(HEADERS
+	EDE_Browser.h
+	EDE_DirTree.h
+	EDE_FileDetailsView.h
+	EDE_FileIconView.h
+	EDE_FileView.h
+	ede_strverscmp.h
+	fileops.h
+	filesystem.h
+)
+
+add_executable(${PROJECT} ${SOURCES} ${HEADERS})
+
+set(FLTK_LIBS
+	fltk_formsd
+	fltk_gld
+	fltk_imagesd
+	fltk_jpegd
+	fltk_pngd
+	fltk_zd
+	fltkd
+)
+
+target_link_libraries(${PROJECT} ${FLTK_LIBS})
+
