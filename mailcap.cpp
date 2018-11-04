@@ -37,7 +37,7 @@
 #define TERM "xterm"
 
 // Maximum length of a mailcap spec
-// We could've used edelib::String, but that would make the whole code a bit 
+// We could've used string, but that would make the whole code a bit 
 // more complex and a bit slower. There's no reason for mailcap to be longer
 // (very long mailcaps are usually application specific codes /e.g. mutt/ which
 // isn't useful to us)

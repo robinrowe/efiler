@@ -19,13 +19,14 @@
 #include <FL/fl_draw.H> // for fl_measure and drawing selection box
 #include <FL/Fl_Shared_Image.H>
 #include <FL/Fl_Window.H> // for window() used in ctor
-
+#if 0
 #include <edelib/Nls.h>
 #include <edelib/String.h>
 #include <edelib/IconTheme.h>
 #include <edelib/IconLoader.h>
 #include <edelib/Debug.h>
-
+#endif
+#include "Properties.h"
 
 // debugging help
 #define DBG "FileIconView: "
@@ -178,9 +179,9 @@ FileIconView::FileIconView(int X, int Y, int W, int H, char*label) : edelib::Exp
 
 
 // Try various names and sizes for icons
-Fl_Image* FileIconView::try_icon(edelib::String icon_name) {
-	edelib::String icon_path;
-	edelib::String tmpname;
+Fl_Image* FileIconView::try_icon(string icon_name) {
+	string icon_path;
+	string tmpname;
 
 fprintf (stderr, "-- Trying %s\n", icon_name.c_str());
 
@@ -210,7 +211,7 @@ fprintf (stderr, "-- Trying %s\n", icon_name.c_str());
 		if (tmpimage) return tmpimage;
 
 		// Try generic icons without last part
-		if (icon_name.find('-',0) != edelib::String::npos) {
+		if (icon_name.find('-',0) != string::npos) {
 			tmpname = icon_name.substr(0,icon_name.find('-',0));
 			tmpimage = try_icon(tmpname);
 			if (tmpimage) return tmpimage;
@@ -254,8 +255,8 @@ void FileIconView::insert(int row, FileItem *item) {
 
 	// Set the label
 	char buffer[FL_PATH_MAX];
-	uint j=0;
-	for (uint i=0; i<item->name.length(); i++,j++) {
+	unsigned j=0;
+	for (unsigned i=0; i<item->name.length(); i++,j++) {
 		buffer[j] = item->name[i];
 		buffer[j+1] = '\0';
 		if (buffer[j] == '@') { // escape @
@@ -289,7 +290,7 @@ void FileIconView::insert(int row, FileItem *item) {
 	b->copy_label(buffer);
 
 	// Tooltip text
-	edelib::String tooltip = _("Name: ")+item->name;
+	string tooltip = _("Name: ")+item->name;
 	if (item->size != "") tooltip += _("\nSize: ")+item->size;
 	tooltip += _("\nType: ")+item->description+_("\nDate: ")+item->date+_("\nPermissions: ")+item->permissions;
 	b->tooltip(strdup(tooltip.c_str()));
@@ -340,7 +341,7 @@ void FileIconView::update(FileItem *item) {
 	if (!w) return;
 
 	// Tooltip text
-	edelib::String tooltip = _("Name: ")+item->name+_("\nSize: ")+item->size+_("\nType: ")+item->description+_("\nDate: ")+item->date+_("\nPermissions: ")+item->permissions;
+	string tooltip = _("Name: ")+item->name+_("\nSize: ")+item->size+_("\nType: ")+item->description+_("\nDate: ")+item->date+_("\nPermissions: ")+item->permissions;
 	w->tooltip(strdup(tooltip.c_str()));
 
 	// Don't crash if try_icon returns nothing
@@ -359,8 +360,8 @@ void FileIconView::update_path(const char* oldpath,const char* newpath) {
 	// Set the label
 	char buffer[FL_PATH_MAX];
 	const char* name = fl_filename_name(newpath);
-	uint j=0;
-	for (uint i=0; i<strlen(name); i++,j++) {
+	unsigned j=0;
+	for (unsigned i=0; i<strlen(name); i++,j++) {
 		buffer[j] = name[i];
 		buffer[j+1] = '\0';
 		if (buffer[j] == '@') { // escape @
@@ -665,7 +666,9 @@ EDEBUG(DBG"start rename\n");
 			for (int i=0; i<children(); i++) {
 				Fl_Widget* w = child(i);
 				int X=Fl::event_x(); int Y=Fl::event_y();
+#if 0
 				if (X>w->x() && X<w->x()+w->w() && Y>w->y()+edelib::ICON_SIZE_MEDIUM && Y<w->y()+w->h())
+#endif
 					{ clicked=i+1; break; }
 			}
 
@@ -770,7 +773,7 @@ EDEBUG(DBG"scrolling\n");
 				}
 	
 				// Construct dnd string and start dnd
-				edelib::String selected_items;
+				string selected_items;
 				for (int i=1; i<=children(); i++)
 					if (selected(i)==1) {
 						selected_items += "file://";
@@ -783,7 +786,7 @@ EDEBUG(DBG"scrolling\n");
 EDEBUG(DBG"- dnd.\n");
 					dragx=ex; dragy=ey; // to test the min. distance
 					Fl::belowmouse(this); // without this, we will never get FL_DND_RELEASE!!!
-					Fl::copy(selected_items.c_str(),selected_items.length(),0);
+					Fl::copy(selected_items.c_str(),(int) selected_items.length(),0);
 					Fl::dnd();
 				}
 				return 1;
@@ -871,7 +874,7 @@ EDEBUG(DBG"After fixing the box coords: (%d,%d,%d,%d)\n", select_x1, select_y1, 
 				int wy2 = w->y()+w->h();
 				// ignore the empty space below label -- equals number of \n's
 				const char* lbl=w->label();
-				for (int j=strlen(lbl)-2; j>0; j--) {
+				for (size_t j=strlen(lbl)-2; j>0; j--) {
 					if (lbl[j]!='\n') break;
 					wy2 -= fl_size();
 				}

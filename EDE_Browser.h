@@ -14,6 +14,7 @@
 #ifndef EDE_Browser_H
 #define EDE_Browser_H
 
+#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>

@@ -33,12 +33,17 @@ const char* mailcap_opener(const char* type, MailcapAction action=MAILCAP_VIEW);
 
 // Returns a list of actions available for a given type
 
-int mailcap_actions(const char* type);
+inline
+int mailcap_actions(const char* type)
+{	STUB_0(mailcap_actions);
+}
 
 
 // Add new type to the list of actions
 
-void mailcap_add_type(const char* type, const char* opener);
-
+inline
+void mailcap_add_type(const char* type, const char* opener)
+{	STUB(mailcap_add_type);
+}
 
 #endif

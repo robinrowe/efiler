@@ -50,17 +50,17 @@
 #ifndef EDE_FileView_H
 #define EDE_FileView_H
 
-
-#include <edelib/String.h>
+#include <string>
+using namespace std;
 
 struct FileItem {
-	edelib::String name; // just the name
-	edelib::String icon;
-	edelib::String size;
-	edelib::String realpath; // whatever the caller uses to access the file - can be VFS
-	edelib::String description;
-	edelib::String date;
-	edelib::String permissions;
+	string name; // just the name
+	string icon;
+	string size;
+	string realpath; // whatever the caller uses to access the file - can be VFS
+	string description;
+	string date;
+	string permissions;
 };
 
 // Type for callbacks

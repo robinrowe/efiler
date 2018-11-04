@@ -17,19 +17,24 @@
 #ifndef _OpenWith_h_
 #define _OpenWith_h_
 
+#include <unistd.h>
+#if 0
 #include <edelib/Nls.h>
 #include <edelib/Window.h>
 #include <edelib/String.h>
 #include <edelib/List.h>
-
+#endif
+#include "Properties.h"
 #include <FL/Fl_Input.H>
 #include <FL/Fl_Check_Button.H>
 #include <FL/Fl_Box.H>
+#include <list>
+#include <string>
 
 class OpenWith : public edelib::Window {
 private:
 	const char* _file, * _type;
-	edelib::list<edelib::String> programs;
+	std::list<std::string> programs;
 	Fl_Input *inpt;
 	Fl_Check_Button *always_use;
 	Fl_Box *txt;

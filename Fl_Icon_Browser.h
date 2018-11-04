@@ -34,9 +34,9 @@
 #ifndef Fl_Icon_Browser_H
 #define Fl_Icon_Browser_H
 
+#include <unistd.h>
 #include <FL/Fl_Browser_.H>
 #include <FL/Fl_Image.H>
-
 #include <stdio.h> 
 
 struct FL_BLINE;
@@ -56,45 +56,84 @@ class Fl_Icon_Browser : public Fl_Browser_ {
 protected:
 
   // required routines for Fl_Browser_ subclass:
-  void* item_first() const ;
-  void* item_next(void*) const ;
-  void* item_prev(void*) const ;
-  int item_selected(void*) const ;
-  void item_select(void*, int);
-  int item_height(void*) const ;
-  int item_width(void*) const ;
-  void item_draw(void*, int, int, int, int) const ;
-  int full_height() const ;
-  int incr_height() const ;
+  void* item_first() const
+	{	STUB_0(item_first);
+	}
+  void* item_next(void*) const 
+	{	STUB_0(item_next);
+	}
+  void* item_prev(void*) const 
+	{	STUB_0(item_prev);
+	}
+  int item_selected(void*) const 
+	{	STUB_0(item_selected);
+	}
+  void item_select(void*, int)
+	{	STUB(item_select);
+	}
+  int item_height(void*) const
+	{	STUB_0(item_height);
+	}
+  int item_width(void*) const
+	{	STUB_0(item_width);
+	}
+  void item_draw(void*, int, int, int, int) const
+	{	STUB(item_draw);
+	}
+  int full_height() const 
+	{	STUB_0(full_height);
+	}
+
+  int incr_height() const 
+	{	STUB_0(incr_height);
+	}
 
   FL_BLINE* find_line(int) const ;
   FL_BLINE* _remove(int) ;
   void insert(int, FL_BLINE*);
-  int lineno(void*) const ;
+  int lineno(void*) const 
+	{	STUB_0(lineno);
+	}
   void swap(FL_BLINE *a, FL_BLINE *b);
 
 public:
 
-  void remove(int);
-  void add(const char*, void* = 0);
-  void insert(int, const char*, void* = 0);
+  void remove(int)
+	{	STUB(remove);
+	}
+  void add(const char*, void* = 0)
+	{	STUB(add);
+	}
+  void insert(int, const char*, void* = 0)
+	{	STUB(insert);
+	}
   void move(int to, int from);
   int  load(const char* filename);
-  void swap(int a, int b);
-  void clear();
+  void swap(int a, int b)
+	{	STUB(swap);
+	}
+  void clear()
+	{	STUB(clear);
+	}
 
   int size() const {return lines;}
   void size(int W, int H) { Fl_Widget::size(W, H); }
 
   int topline() const ;
   enum Fl_Line_Position { TOP, BOTTOM, MIDDLE };
-  void lineposition(int, Fl_Line_Position);
+  void lineposition(int, Fl_Line_Position)
+	{	STUB(lineposition);
+	}
   void topline(int l) { lineposition(l, TOP); }
   void bottomline(int l) { lineposition(l, BOTTOM); }
   void middleline(int l) { lineposition(l, MIDDLE); }
 
-  int select(int, int=1);
-  int selected(int) const ;
+  int select(int, int=1)
+	{	STUB_0(select);
+	}
+  int selected(int) const 
+	{	STUB_0(selected);
+	}
   void show(int n);
   void show() {Fl_Widget::show();}
   void hide(int n);
@@ -103,12 +142,23 @@ public:
 
   int value() const ;
   void value(int v) {select(v);}
-  const char* text(int) const ;
-  void text(int, const char*);
-  void* data(int) const ;
-  void data(int, void* v);
+  const char* text(int) const 
+	{	STUB_0(text);
+	}
+  void text(int, const char*)
+	{	STUB(test);
+	}
+  void* data(int) const 
+	{	STUB_0(data);
+	}
+  void data(int, void* v)
+	{	STUB(data);
+	}
 
-  Fl_Icon_Browser(int, int, int, int, const char* = 0);
+  Fl_Icon_Browser(int x, int y, int w, int h, const char* title= 0)
+	:	Fl_Browser_(x,y,w,h,title)
+	{	STUB(Fl_Icon_Browser);
+	}
   ~Fl_Icon_Browser() { clear(); }
 
   char format_char() const {return format_char_;}
@@ -131,26 +181,40 @@ public:
 
 
   // icon support
-  void set_icon(int line, Fl_Image* icon);
+  void set_icon(int line, Fl_Image* icon)
+	{	STUB(set_icon);
+	}
   void remove_icon(int line);
-  Fl_Image* get_icon(int line);
+  Fl_Image* get_icon(int line)
+	{	STUB_0(get_icon);
+	}
 
   // focus management
   int get_focus() { return lineno(selection()); }
   void set_focus(int row) { select(row,selected(row)); }
 
   // tree support
-  void indent(int line, int level);
-  int indent(int line);
+  void indent(int line, int level)
+	{	STUB(indent);
+	}
+  int indent(int line)
+	{	STUB_0(indent);
+	}
   void collapse(void*l);
-  void expand(void*l);
+  void expand(void*l)
+	{	STUB(expand);
+	}
   void toggle_collapse(void*l);
   void collapse(int line);
-  void expand(int line);
+  void expand(int line)
+	{	STUB(expand);
+	}
   void toggle_collapse(int line);
   void collapse_all();
   void expand_all();
-  int handle(int);
+  int handle(int)
+	{	STUB_0(handle);
+	}
 };
 
 #endif

@@ -51,6 +51,7 @@ public:
 
 	// Shortcut function to redraw directory tree
 	void reload() {
+#pragma warning(disable : 4996)
 		char* path = strdup(system_path(get_focus()));
 		clear();
 		init();

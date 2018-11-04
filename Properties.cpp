@@ -21,10 +21,10 @@
 #include <sys/types.h> // for getuid()
 #include <pwd.h> // for getpwent()
 #include <grp.h> // for getgrent()
-
+#if 0
 #include <edelib/Nls.h>
 #include <edelib/IconLoader.h>
-
+#endif
 #include <FL/Fl_Tabs.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Return_Button.H>
@@ -40,6 +40,7 @@
 #define DIALOG_WIDTH 320
 #define DIALOG_HEIGHT 290
 
+std::string edelib::IconLoader::path;
 
 void properties_cancel_cb(Fl_Widget*w, void*) {
 	Fl_Window* win = (Fl_Window*)w->parent();
@@ -61,6 +62,7 @@ Properties::Properties(const char* file)  : edelib::Window(DIALOG_WIDTH, DIALOG_
 	// Create path from filename
 	int k=0;
 	char filename[FL_PATH_MAX], filepath[FL_PATH_MAX];
+#pragma warning(disable:4996)
 	strncpy(filename, file, FL_PATH_MAX-1);
 
 	// Fix bug in fl_filename_name which returns nothing for directories
@@ -71,7 +73,7 @@ Properties::Properties(const char* file)  : edelib::Window(DIALOG_WIDTH, DIALOG_
 	const char *tmp = fl_filename_name(filename);
 	strcpy(filename, tmp);
 
-	k+=strlen(file)-strlen(filename);
+	k+=int(strlen(file)-strlen(filename));
 	if (k>FL_PATH_MAX-1) k=FL_PATH_MAX-1;
 	strncpy(filepath, file, k);
 	filepath[k]='\0';
@@ -82,9 +84,9 @@ Properties::Properties(const char* file)  : edelib::Window(DIALOG_WIDTH, DIALOG_
 
 	// Stat for current file
 	bool stat_succeeded = false; // shouldn't happen
-	struct stat64 stat_buffer;
+	struct stat stat_buffer;
 
-	const char* owner_name, *group_name;
+//	const char* owner_name, *group_name;
 	bool can_rename=false, can_chown=false, can_chmod=false;
 	int is_executable=0, n_owner=0, n_group=0, n_others=0;
 	char mode_nr[5];
@@ -94,7 +96,7 @@ Properties::Properties(const char* file)  : edelib::Window(DIALOG_WIDTH, DIALOG_
 	int user_uid=getuid(), user_gid=getgid();
 	if (user_uid==0) can_chown=true; // FIXME
 
-	if (!stat64(file,&stat_buffer)) { 
+	if (!stat(file,&stat_buffer)) { 
 		stat_succeeded = true;
 		owner_uid=stat_buffer.st_uid;
 		owner_gid=stat_buffer.st_gid;
@@ -124,7 +126,7 @@ Properties::Properties(const char* file)  : edelib::Window(DIALOG_WIDTH, DIALOG_
 
 	// Stat for directory the file resides in
 	// Needed to see if user can rename file
-	if (!stat64(filepath,&stat_buffer)) { 
+	if (!stat(filepath,&stat_buffer)) { 
 		if (stat_buffer.st_uid==user_uid || stat_buffer.st_gid==user_gid)
 			can_rename=true;
 	}
@@ -162,7 +164,8 @@ Properties::Properties(const char* file)  : edelib::Window(DIALOG_WIDTH, DIALOG_
 			if(edelib::IconLoader::inited()) {
 				Fl_Box *img = new Fl_Box(10, 35, 65, 65);
 				//img->box(FL_DOWN_BOX);
-				edelib::String icon = edelib::IconLoader::get_path(mime_resolver.icon_name().c_str(), edelib::ICON_SIZE_HUGE);
+				const char* path = mime_resolver.icon_name().c_str();
+				std::string icon = edelib::IconLoader::get_path(path, edelib::ICON_SIZE_HUGE);
 				if (icon=="") icon = edelib::IconLoader::get_path("empty", edelib::ICON_SIZE_HUGE, edelib::ICON_CONTEXT_MIMETYPE);
 				Fl_Image *i = Fl_Shared_Image::get(icon.c_str());
 				if(i) img->image(i);

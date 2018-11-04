@@ -12,19 +12,19 @@
 
 #include <string>
 #include "EDE_FileView.h"
-
+#include "Properties.h"
 #include <FL/Fl_Input.H>
 #include <FL/Fl_Shared_Image.H>
 #include <FL/Fl.H>
 #include <FL/Fl_Window.H> // for window() used in ctor
 #include <FL/filename.H> // used in update_path()
-
+#if 0
 #include <edelib/Nls.h>
 #include <edelib/IconTheme.h>
 #include <edelib/IconLoader.h>
 #include <edelib/String.h>
 #include <edelib/Debug.h>
-
+#endif
 #include "EDE_Browser.h"
 
 
@@ -82,6 +82,7 @@ void FileDetailsView::show_editbox(int row) {
 
 	// make the row "invisible"
 	char* ntext = (char*)malloc(sizeof(char)*(strlen(text(row))+8)); // add 7 places for format chars
+#pragma warning(disable:4996)
 	strncpy(ntext+7, text(row), strlen(text(row)));
 	strncpy(ntext, "@C255@.", 7);
 	ntext[strlen(text(row))+7]='\0';
@@ -175,9 +176,9 @@ FileDetailsView::FileDetailsView(int X, int Y, int W, int H, char*label) : EDE_B
 
 
 // Try various names and sizes for icons
-Fl_Image* FileDetailsView::try_icon(edelib::String icon_name) {
-	edelib::String icon_path;
-	edelib::String tmpname;
+Fl_Image* FileDetailsView::try_icon(string icon_name) {
+	string icon_path;
+	string tmpname;
 
 fprintf (stderr, "-- Trying %s\n", icon_name.c_str());
 
@@ -207,7 +208,7 @@ fprintf (stderr, "-- Trying %s\n", icon_name.c_str());
 		if (tmpimage) return tmpimage;
 
 		// Try generic icons without last part
-		if (icon_name.find('-',0) != edelib::String::npos) {
+		if (icon_name.find('-',0) != string::npos) {
 			tmpname = icon_name.substr(0,icon_name.find('-',0));
 			tmpimage = try_icon(tmpname);
 			if (tmpimage) return tmpimage;
@@ -237,11 +238,11 @@ fprintf (stderr, "-- Trying %s\n", icon_name.c_str());
 // struct FileItem (defined in EDE_FileView.h)
 
 void FileDetailsView::insert(int row, FileItem *item) {
-	// edelib::String doesn't support adding plain char
+	// string doesn't support adding plain char
 	char cc[2]; cc[0]=column_char(); cc[1]='\0';
 
 	// Construct browser line
-	edelib::String value = item->name + cc + item->description + cc + item->size + cc + item->date + cc + item->permissions;
+	string value = item->name + cc + item->description + cc + item->size + cc + item->date + cc + item->permissions;
 	char* realpath = strdup(item->realpath.c_str());
 	EDE_Browser::insert(row, value.c_str(), realpath); // put realpath into data
 	bucket.add(realpath);
@@ -263,11 +264,11 @@ void FileDetailsView::update(FileItem *item) {
 	//  c) causes browser to lose focus, making it impossible to click on something while
 	//  directory is loading
 
-	// edelib::String doesn't support adding plain char
+	// string doesn't support adding plain char
 	char cc[2]; cc[0]=column_char(); cc[1]='\0';
 
 	// Construct browser line
-	edelib::String value = item->name + cc + item->description + cc + item->size + cc + item->date + cc + item->permissions;
+	string value = item->name + cc + item->description + cc + item->size + cc + item->date + cc + item->permissions;
 	char* realpath = strdup(item->realpath.c_str());
 	text(row, value.c_str());
 	data(row, realpath);
@@ -289,7 +290,7 @@ void FileDetailsView::update_path(const char* oldpath,const char* newpath) {
 
 	// Update filename in list
 	const char* oldline = strchr(text(row), column_char());
-	edelib::String line = fl_filename_name(newpath);
+	string line = fl_filename_name(newpath);
 	line += oldline;
 	text(row, line.c_str());
 }
@@ -448,7 +449,7 @@ int FileDetailsView::handle(int e) {
 	
 		static int dragx,dragy; // to check min drag distance
 		if (e==FL_DRAG) {
-			edelib::String selected_items;
+			string selected_items;
 			for (int i=1; i<=size(); i++)
 				if (selected(i)==1) {
 					selected_items += "file://";
@@ -457,7 +458,7 @@ int FileDetailsView::handle(int e) {
 				}
 EDEBUG(DBG "DnD buffer: '%s'\n", selected_items.c_str());
 			dragx = Fl::event_x(); dragy = Fl::event_y();
-			Fl::copy(selected_items.c_str(),selected_items.length(),0);
+			Fl::copy(selected_items.c_str(),(int) selected_items.length(),0);
 			Fl::dnd();
 			return 1; // don't do the multiple selection thing from Fl_Browser
 		}

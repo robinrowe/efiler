@@ -9,11 +9,13 @@ set(PROJECT Efiler)
 project(${PROJECT})
 
 set(FLTK_DIR /Code/fltk)
-include_directories(${FLTK_DIR} ${FLTK_DIR}/build)
-link_directories(${FLTK_DIR}/build/lib/Debug)
-if(win32)
-add_definitions(-DWIN32)
-endif()
+include_directories(${FLTK_DIR}/fltk-src ${FLTK_DIR}/fltk-build)
+link_directories(${FLTK_DIR}/fltk-src/build/lib/Debug)
+
+if(WIN32)
+	include_directories("/Code/github/libunistd/unistd")
+	link_directories("/Code/github/libunistd/build/unistd/Debug")
+endif(WIN32)
 
 set(SOURCES
 	EDE_Browser.cpp
@@ -24,7 +26,7 @@ set(SOURCES
 	fileops.cpp
 	filesystem.cpp
 	Flu_Wrap_Group.cpp
-	mailcap.cpp
+#	mailcap.cpp
 	OpenWith.cpp
 	Properties.cpp
 	Util.cpp
@@ -44,14 +46,21 @@ set(HEADERS
 add_executable(${PROJECT} ${SOURCES} ${HEADERS})
 
 set(FLTK_LIBS
-	fltk_formsd
-	fltk_gld
+#	fltk_formsd
+#	fltk_gld
 	fltk_imagesd
 	fltk_jpegd
 	fltk_pngd
 	fltk_zd
 	fltkd
+	comctl32
 )
 
-target_link_libraries(${PROJECT} ${FLTK_LIBS})
+if(WIN32)
+	set(UNISTD libunistd)
+else(WIN32)
+	set(UNISTD)
+endif(WIN32)
+
+target_link_libraries(${PROJECT} ${FLTK_LIBS} ${UNISTD})
 

@@ -13,25 +13,26 @@
 
 
 #include "EDE_DirTree.h"
-
+#include "Properties.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
 #include <sys/stat.h>
-
+#include <string>
+using namespace std;
 
 // This library is hopelessly single-platform
 
 
 #include <FL/Fl_Shared_Image.H>
 #include <FL/fl_ask.H>
-
+#if 0
 #include <edelib/Nls.h>
 #include <edelib/IconTheme.h>
 #include <edelib/IconLoader.h>
 #include <edelib/StrUtil.h>
-
+#endif
 
 #define MAX_TREE_DEPTH 100
 #define FL_PATH_MAX 256
@@ -42,7 +43,7 @@
 // Fn that makes sure path ends with slash
 // (ensure that path allocation is large enough to take one extra char)
 void make_end_with_slash(char* path) {
-	int i=strlen(path);
+	size_t i=strlen(path);
 	if (path[i-1] != '/') {
 		path[i]='/';
 		path[i+1]='\0';
@@ -171,14 +172,18 @@ void DirTree::init()
 
 	// Top level icon
 	add(_("System"));
+#if 0
 	set_icon(1, Fl_Shared_Image::get(edelib::IconLoader::get_path("computer",edelib::ICON_SIZE_TINY).c_str()));
+#endif
 	// TODO: use OS icons: Tux for Linux, devil for FreeBSD...
 	data(1, strdup("about:sysinfo"));
 
 	// Home icon
 	snprintf(buffer,PATH_MAX,_("%s's Home"), getenv("USER"));
 	add(strdup(buffer));
+#if 0
 	set_icon(2, Fl_Shared_Image::get(edelib::IconLoader::get_path("user-home",edelib::ICON_SIZE_TINY).c_str()));
+#endif
 	strncpy(buffer,getenv("HOME"),PATH_MAX);
 	make_end_with_slash(buffer);
 	data(2, strdup(buffer));
@@ -186,10 +191,12 @@ void DirTree::init()
 
 	// Root icon
 	add(_("Whole disk"));
-	edelib::String root_icon = edelib::IconLoader::get_path("folder_red",edelib::ICON_SIZE_TINY);
+#if 0
+	string root_icon = edelib::IconLoader::get_path("folder_red",edelib::ICON_SIZE_TINY);
 	if (root_icon=="") // sigh...
 		root_icon = edelib::IconLoader::get_path("folder",edelib::ICON_SIZE_TINY);
 	set_icon(3, Fl_Shared_Image::get(root_icon.c_str()));
+#endif
 	data(3,strdup("/"));
 	indent(3,1);
 
@@ -233,7 +240,9 @@ void DirTree::init()
 
 				snprintf(buffer, PATH_MAX, filesystems[i].uiname, shortdev);
 				add(strdup(buffer));
+#if 0
 				set_icon(num_files+1, Fl_Shared_Image::get( edelib::IconLoader::get_path(filesystems[i].icon,edelib::ICON_SIZE_TINY).c_str()));
+#endif
 				data(num_files+1, strdup(mountpoint));
 				indent(num_files+1, 1);
 				num_files++;
@@ -270,11 +279,13 @@ bool DirTree::subdir_scan(int line) {
 	struct stat buf;
 	char fullpath[FL_PATH_MAX];
 	char* directory = (char*)data(line);
+		size = scandir(directory, &files, 0, (int(*)(const dirent **, const dirent**))mmyversionsort);
+#if 0
 	if (ignore_case_)
 		size = scandir(directory, &files, 0, (int(*)(const dirent **, const dirent**))mmyversionsort);
 	else
 		size = scandir(directory, &files, 0, versionsort);
-
+#endif
 	if (size<1) return false; // Permission denied - but view will warn the user
 
 
@@ -294,7 +305,9 @@ bool DirTree::subdir_scan(int line) {
 		if (!S_ISDIR(buf.st_mode)) continue; // not a directory
 
 		insert(pos, strdup(n), strdup(fullpath));
+#if 0
 		set_icon(pos, Fl_Shared_Image::get(edelib::IconLoader::get_path("folder", edelib::ICON_SIZE_TINY).c_str()));
+#endif
 		indent(pos++, indent(line)+1);
 	}
 	free(files[size-1]); free(files); // see scandir(3)
@@ -323,12 +336,12 @@ bool DirTree::set_current(const char* path) {
 // to the given path
 // If parent is given, only entries below it will be scanned
 int DirTree::find_best_match(const char* path, int parent) {
-	uint bestlen=0;
+	size_t bestlen=0;
 	int bestindex=-1;
 	for (int i=parent; i<=size(); i++) {
 		if ((i!=parent) && (indent(i)<=indent(parent))) break;
 		char* d = (char*)data(i);
-		uint len = strlen(d);
+		size_t len = strlen(d);
 		if ((len>bestlen) && (strncmp((char*)path, d, len)==0)) {
 			bestlen=len;
 			bestindex=i;

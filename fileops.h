@@ -17,7 +17,8 @@
 
 #include "EDE_FileView.h"
 #include <FL/Fl_Box.H>
-#include <edelib/Window.h>
+//#include <edelib/Window.h>
+#include "Properties.h"
 
 // Execute cut or copy operation when List View is active
 void do_cut_copy(bool m_copy);

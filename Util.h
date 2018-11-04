@@ -15,7 +15,7 @@
 #define edelib_Util_h
 
 //#include "../edeconf.h"
-
+#include <time.h>
 
 //namespace edelib {
 
@@ -76,7 +76,7 @@ const char* nice_size(double size);
 
 // Returns nicely formatted string for date and time given in seconds since
 // Epoch. This should be in config
-const char* nice_time(long int epoch);
+const char* nice_time(time_t epoch);
 
 // Create vector from string using separator
 //std::vector<char*> vec_from_string(const char *str, const char *separator);

@@ -11,7 +11,7 @@
  */
 
 #include "Util.h"
-
+#include <linux/limits.h>
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -227,7 +227,7 @@ const char* nice_size(double size) {
 }
 
 
-const char* nice_time(long int epoch) {
+const char* nice_time(time_t epoch) {
 	static char buffer[256];
 
 	const time_t k = (const time_t)epoch;

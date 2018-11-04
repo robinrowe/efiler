@@ -15,11 +15,11 @@
 
 
 #include "OpenWith.h"
-
+#if 0
 #include <edelib/IconTheme.h>
 #include <edelib/IconLoader.h>
 #include <edelib/Run.h>
-
+#endif
 #include <FL/Fl.H>
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Box.H>
@@ -73,14 +73,14 @@ void openwith_browse_cb(Fl_Widget*w, void*i) {
 
 // Callback that handles "autocomplete" in the openwith dialog
 void program_input_cb(Fl_Widget*w, void*p) {
-	edelib::list<edelib::String>* progs = (edelib::list<edelib::String>*)p;
+	std::list<std::string>* progs = (std::list<std::string>*)p;
 	Fl_Input *inpt = (Fl_Input*)w;
 	Fl_Window *win = (Fl_Window*)w->parent();
 
 	if (Fl::event()==FL_KEYDOWN && Fl::event_key()!=FL_BackSpace && Fl::event_key()!=FL_Delete) {
 		const char* loc = inpt->value(); // shortcut
 		if (strlen(loc)<1 || loc[strlen(loc)-1]=='/') return;
-		uint pos = inpt->position();
+		unsigned pos = inpt->position();
 		if (pos!=strlen(loc)) return; // cursor in the middle
 		int mark = inpt->mark();
 
@@ -91,7 +91,7 @@ void program_input_cb(Fl_Widget*w, void*p) {
 			return;
 		}
 
-		edelib::list<edelib::String>::iterator it1, it2;
+		std::list<std::string>::iterator it1, it2;
 		it1 = progs->begin();
 		it2 = progs->end();
 		while (it1 != it2) {
@@ -102,7 +102,7 @@ void program_input_cb(Fl_Widget*w, void*p) {
 
 		inpt->replace(pos, mark, (*it1).c_str()+pos);
 		inpt->position(pos);
-		inpt->mark(strlen((*it1).c_str()));
+		inpt->mark((int)strlen((*it1).c_str()));
 	}
 }
 
@@ -113,12 +113,12 @@ void program_input_cb(Fl_Widget*w, void*p) {
 OpenWith::OpenWith()  : edelib::Window(DIALOG_WIDTH, DIALOG_HEIGHT, _("Choose program")), _file(0) {
 	set_modal();
 
-	edelib::list<edelib::String>::iterator it1, it2;
+	std::list<std::string>::iterator it1, it2;
 	dirent **files;
 	struct stat buf;
 	char pn[FL_PATH_MAX];
 
-	Fl_Group *gr;
+//	Fl_Group *gr;
 	Fl_Box *img;
 	Fl_Image* i;
 	Fl_Button *but1, *but2, *but3;
@@ -164,6 +164,7 @@ OpenWith::OpenWith()  : edelib::Window(DIALOG_WIDTH, DIALOG_HEIGHT, _("Choose pr
 	// -- Find all executables in $PATH and add them to programs list
 
 	// Split $PATH at ':' character
+#pragma warning (disable:4996)
 	char* path = strdup(getenv("PATH")); // original would get destroyed
 	char *pathpart = strtok(path, ":");
 	while (pathpart) {
@@ -177,7 +178,7 @@ OpenWith::OpenWith()  : edelib::Window(DIALOG_WIDTH, DIALOG_HEIGHT, _("Choose pr
 
 			// Skip all directories and non-executables
 			if (!S_ISDIR(buf.st_mode) && (buf.st_mode&S_IXOTH)) {
-				edelib::String name(n);
+				std::string name(n);
 				it1=programs.begin(); it2=programs.end();
 				bool exists=false;
 				while (it1 != it2) {

@@ -24,7 +24,7 @@
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Menu_Button.H>
 #include <FL/filename.H>
-
+#if 0
 #include <edelib/File.h>
 #include <edelib/Directory.h>
 #include <edelib/Nls.h>
@@ -32,7 +32,7 @@
 #include <edelib/StrUtil.h>
 #include <edelib/MimeType.h>
 #include <edelib/MessageBox.h>
-
+#endif
 
 #include "EDE_FileView.h"
 #include "Util.h"
@@ -47,9 +47,9 @@ enum OperationType_ { // Stop idiotic warnings from gcc (anonymous enum in globa
 	CUT,
 	COPY,
 	ASK 
-} operation = ASK;
+};
 
-
+static OperationType_ operation = ASK;
 
 // --------------------------------------------------------------------------------------------
 //    ede_choice_alert() - display choice with alert icon.
@@ -59,7 +59,7 @@ enum OperationType_ { // Stop idiotic warnings from gcc (anonymous enum in globa
 //    Note that function doesn't support text formatting.
 // --------------------------------------------------------------------------------------------
 
-
+#if 0
 #include <stdarg.h>
 
 int ede_choice_alert(const char*msg, ...) {
@@ -81,7 +81,7 @@ fprintf (stderr, "Add button: '%s'\n", btn);
 	mb.set_modal();
 	return mb.run();
 }
-
+#endif
 
 
 // ----------------------------------------------
@@ -98,6 +98,7 @@ const char* my_filename_name(const char* path) {
 	if (!my_isdir(path)) return fl_filename_name(path);
 
 	static char buffer[FL_PATH_MAX];
+#pragma warning(disable:4996)
 	strncpy(buffer, path, FL_PATH_MAX);
 	buffer[strlen(path)-1]='\0';
 	return fl_filename_name(buffer);
@@ -107,7 +108,7 @@ const char* my_filename_name(const char* path) {
 const char* my_filename_dir(const char* path) {
 	const char* name = my_filename_name(path);
 
-	int pathlen = strlen(path)-strlen(name);
+	size_t pathlen = strlen(path)-strlen(name);
 	if (pathlen>=FL_PATH_MAX) pathlen=FL_PATH_MAX-1;
  
 	static char buffer[FL_PATH_MAX];
@@ -126,7 +127,7 @@ void do_cut_copy(bool m_copy) {
 	if (m_copy) operation = COPY; else operation = CUT;
 
 	// Allocate buffer
-	uint bufsize=10000;
+	unsigned bufsize=10000;
 	char* buf = (char*)malloc(sizeof(char)*bufsize);
 	buf[0]='\0';
 
@@ -162,7 +163,7 @@ void do_cut_copy(bool m_copy) {
 		nselected=1;
 	}
 
-	Fl::copy(buf,strlen(buf),1); // use clipboard
+	Fl::copy(buf,(int)strlen(buf),1); // use clipboard
 	free(buf);
 
 	// Deselect all and restore focus
@@ -261,7 +262,7 @@ bool my_copy(const char* src, const char* dest) {
 		}
 
 		if (stop_now) {
-			edelib::alert(_("Copying interrupted!\nFile %s is only half-copied and probably incorrect."), my_filename_name(dest));
+			printf(_("Copying interrupted!\nFile %s is only half-copied and probably incorrect."), my_filename_name(dest));
 			break; 
 		}
 	}
@@ -356,14 +357,14 @@ void do_delete() {
 		for (int i=0; i<list_size; i++)
 			if (!my_isdir(files_list[i])) 
 				if (!edelib::file_remove(files_list[i]))
-					edelib::alert(_("Couldn't delete file\n\t%s\n%s"), files_list[i], strerror(errno));
+					printf(_("Couldn't delete file\n\t%s\n%s"), files_list[i], strerror(errno));
 
 		// ...then directories
 		// since expand_dirs() returns first dirs then files, we should go in oposite direction
 		for (int i=list_size-1; i>=0; i--)
 			if (my_isdir(files_list[i])) 
 				if (!edelib::dir_remove(files_list[i]))
-					edelib::alert(_("Couldn't delete directory\n\t%s\n%s"), files_list[i], strerror(errno));
+					printf(_("Couldn't delete directory\n\t%s\n%s"), files_list[i], strerror(errno));
 
 		// refresh directory listing - optimized
 		// if notify is available, it will do it for us
@@ -391,9 +392,9 @@ void do_rename(const char* newname) {
 	snprintf(newpath, FL_PATH_MAX-1, "%s%s", current_dir, newname);
 	
 	if (edelib::file_exists(newpath))
-		edelib::alert(_("Filename already in use: %s"), newname);
+		printf(_("Filename already in use: %s"), newname);
 	else if (!edelib::file_rename(oldpath,newpath))
-		edelib::alert(_("Rename %s to %s failed!"), oldname, newname);
+		printf(_("Rename %s to %s failed!"), oldname, newname);
 	else 
 		if (!notify_available) view->update_path(oldpath,newpath);
 }
@@ -440,7 +441,7 @@ fprintf (stderr, "PASTE from '%s', to '%s', type=%d\n",(char*)Fl::event_text(),t
 	int k=0;
 	do {
 		tmp2 = strchr(tmp,'\n');
-		int len=tmp2-tmp;
+		ptrdiff_t len=tmp2-tmp;
 		if (!tmp2) len=strlen(tmp);
 		if (len<2) { tmp=tmp2+1; count--; continue; }
 		from[k] = (char*)malloc(sizeof(char) * (len+2));
@@ -520,7 +521,7 @@ fprintf (stderr, "from[%d]='%s'\n", k, from[k]);
 	char *srcdir = strdup(my_filename_dir(from[0]));
 	if (strcmp(srcdir,to)==0) {
 		// This should never happen cause we already checked it...
-		edelib::alert(_("You cannot copy a file onto itself!"));
+		printf(_("You cannot copy a file onto itself!"));
 		free(srcdir);
 		goto FINISH;
 	}
@@ -544,7 +545,7 @@ fprintf (stderr, "from[%d]='%s'\n", k, from[k]);
 
 	// Set ProgressBar range
 	cut_copy_progress->minimum(0);
-	cut_copy_progress->maximum(count);
+	cut_copy_progress->maximum((float)count);
 	cut_copy_progress->value(0);
 
 	// Count files in directories
@@ -552,7 +553,7 @@ fprintf (stderr, "from[%d]='%s'\n", k, from[k]);
 	char** files_list = (char**)malloc(sizeof(char**)*list_capacity);
 	for (int i=0; i<count; i++) {
 		if (!stop_now) expand_dirs(from[i], files_list, list_size, list_capacity);
-		cut_copy_progress->value(i+1);
+		cut_copy_progress->value(float(i+1));
 		Fl::check(); // check to see if user pressed Stop
 	}
 
@@ -564,7 +565,7 @@ fprintf (stderr, "from[%d]='%s'\n", k, from[k]);
 
 	// Now copying those files
 	cut_copy_progress->minimum(0);
-	cut_copy_progress->maximum(list_size);
+	cut_copy_progress->maximum((float)list_size);
 	cut_copy_progress->value(0);
 	char dest[FL_PATH_MAX];
 
@@ -692,7 +693,7 @@ fprintf (stderr, "from[%d]='%s'\n", k, from[k]);
 			item->size = nice_size(buf.st_size);
 			edelib::MimeType mt;
 			mt.set(from[i]);
-			edelib::String desc,icon;
+			string desc,icon;
 			desc = mt.comment();
 			// First letter of desc should be upper case:
 			if (desc.length()>0 && desc[0]>='a' && desc[0]<='z') desc[0] = desc[0]-'a'+'A';

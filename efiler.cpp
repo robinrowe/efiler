@@ -10,7 +10,8 @@
  * See COPYING for details.
  */
 
-
+#include <unistd.h>
+#include <sys/types.h>
 #include <string.h>
 #include <dirent.h>
 #include <sys/stat.h>
@@ -19,17 +20,15 @@
 #include <unistd.h> // for getuid & getgid
 
 // for application icon:
-#include <X11/xpm.h>
+// #include <X11/xpm.h>
 #include <FL/x.H> 
 #include "efiler.xpm"
-
-
 #include <FL/Fl.H>
 #include <FL/Fl_Menu_Bar.H>
 #include <FL/Fl_Menu_Button.H>
 #include <FL/filename.H>
 #include <FL/Fl_File_Input.H> // location bar
-
+#if 0
 #include <edelib/Directory.h>
 #include <edelib/DirWatch.h>
 #include <edelib/FileTest.h>
@@ -42,20 +41,19 @@
 #include <edelib/String.h>
 #include <edelib/StrUtil.h>
 #include <edelib/Window.h>
-
+#endif
 #include "EDE_FileView.h" // our file view widget
 #include "EDE_DirTree.h" // directory tree
 #include "Util.h" // ex-edelib
 #include "OpenWith.h"  // Open with... window
 #include "Properties.h"  // File properties window
-
 #include "fileops.h" // file operations
 #include "filesystem.h" // filesystem support
 #include "ede_strverscmp.h" // local copy of strverscmp
 #include "mailcap.h" // handling mailcap file
-
-
-
+ 
+#include <sys/types.h>
+#include <sys/stat.h>
 
 edelib::Window* win;
 FileView* view;
@@ -66,12 +64,13 @@ Fl_Tile* tile;
 Fl_Group* location_bar;
 Fl_File_Input* location_input;
 Fl_Menu_Button* context_menu;
+class OpenWith;
 OpenWith *ow;
 
 edelib::Resource app_config;
 edelib::MimeType mime_resolver;
 
-struct stat64 stat_buffer;
+struct stat stat_buffer;
 
 // global values
 
@@ -118,7 +117,7 @@ public:
 	int handle(int e) {
 		// Have F8 function as switch between active views
 		if (e == FL_KEYBOARD && Fl::event_key()==FL_F+8) {
-			void*p;
+			void* p=0;
 			if (view->type() == FILE_DETAILS_VIEW) {
 				iconsview_cb(main_menu,p);
 			} else {
@@ -160,7 +159,7 @@ public:
 			if (Fl::event_state(FL_CTRL)) {
 				const char* v = value();
 				if (Fl::event_key()==FL_Left) {
-					for (uint i=position()-2; i>=0; i--)
+					for (unsigned i=position()-2; i>=0; i--)
 						if (v[i]=='/') {
 							if (Fl::event_state(FL_SHIFT))
 								position(i+1,mark()); 
@@ -171,7 +170,7 @@ public:
 					return 1; // don't go out
 				}
 				if (Fl::event_key()==FL_Right) {
-					for (uint i=position()+1; i<strlen(v); i++)
+					for (unsigned i=position()+1; i<strlen(v); i++)
 						if (v[i]=='/') { 
 							if (Fl::event_state(FL_SHIFT))
 								position(i+1,mark()); 
@@ -308,7 +307,7 @@ void loaddir(const char *path) {
 			if (path!=current_dir) strncpy(current_dir,tmpath,strlen(tmpath)+1);
 		}
 	} else {
-		edelib::alert(_("Directory not found: %s"),path);
+		printf(_("Directory not found: %s"),path);
 		free(tmpath);
 		semaphore=false;
 		return;
@@ -338,18 +337,18 @@ void loaddir(const char *path) {
 		size = scandir(current_dir, &files, 0, (int(*)(const dirent**, const dirent**))ede_versionsort);
 
 	if (size<1) { // there should always be at least '.' and '..'
-		edelib::alert(_("Permission denied!"));
+		printf(_("Permission denied!"));
 		strncpy(current_dir,old_dir,strlen(current_dir));
 		semaphore=false;
 		return;
 	}
 
 	// Ok, now we know everything is fine...
-
+#if 0
 	// Remove old watch and add new one
 	edelib::DirWatch::remove(old_dir);
 	edelib::DirWatch::add(current_dir, edelib::DW_CREATE | edelib::DW_DELETE | edelib::DW_ATTRIB | edelib::DW_RENAME | edelib::DW_MODIFY);
-
+#endif
 	// Update directory tree
 	if (showtree) dirtree->set_current(current_dir);
 	location_input->value(current_dir);
@@ -380,7 +379,7 @@ void loaddir(const char *path) {
 		char fullpath[FL_PATH_MAX];
 		snprintf (fullpath,FL_PATH_MAX-1,"%s%s",current_dir,n);
 
-		if (stat64(fullpath,&stat_buffer)) continue; // happens when user has traverse but not read privilege
+		if (stat(fullpath,&stat_buffer)) continue; // happens when user has traverse but not read privilege
 
 		FileItem *item = new FileItem;
 		item->name = n;
@@ -431,12 +430,12 @@ void loaddir(const char *path) {
 	}
 	view->redraw();
 	Fl::check();
-
+#if 0
 	// Update mime types - can be slow...
 	for (int i=0; i<fsize; i++) {
 		if (item_list[i]->description != "Directory" && item_list[i]->description != "Go up") {
 			mime_resolver.set(item_list[i]->realpath.c_str());
-			edelib::String desc,icon;
+			string desc,icon;
 			desc = mime_resolver.comment();
 			// First letter of desc should be upper case:
 			if (desc.length()>0 && desc[0]>='a' && desc[0]<='z') desc[0] = desc[0]-'a'+'A';
@@ -449,7 +448,7 @@ void loaddir(const char *path) {
 			Fl::check(); // keep interface responsive while updating mimetypes
 		}
 	}
-
+#endif
 	// Cleanup
 	for (int i=0; i<fsize; i++) delete item_list[i];
 	delete[] item_list;
@@ -475,13 +474,14 @@ void loaddir(const char *path) {
 // and the action parameter
 void file_open(const char* path, MailcapAction action) {
 
-	if (stat64(path,&stat_buffer)) return; // stat error
+	if (stat(path,&stat_buffer)) return; // stat error
 	if (S_ISDIR(stat_buffer.st_mode)) {  // directories are handled internally
 		loaddir(path);
 		return;
 	}
 
 	// Find opener
+#if 0
 	mime_resolver.set(path);
 //	char* opener = simpleopener(mime_resolver.type().c_str());
 	const char* opener = mailcap_opener(mime_resolver.type().c_str(), action);
@@ -522,6 +522,8 @@ void file_open(const char* path, MailcapAction action) {
 		setrlimit (RLIMIT_CORE, rlim);
 		free(rlim);
 	}
+#endif
+
 }
 
 
@@ -564,8 +566,11 @@ void openwith_cb(Fl_Widget*, void*) {
 
 	const char* file;
 	if(file = view->path(view->get_focus())){
+#if 0
 		mime_resolver.set(file);
 		ow->show(file, mime_resolver.type().c_str(), mime_resolver.comment().c_str());
+#endif
+
 	}
 	// else show a dialog that nothing has been selected (or ignore)
 } 
@@ -728,7 +733,7 @@ void location_input_cb(Fl_Widget*, void*) {
 
 		const char* loc = location_input->value(); // shortcut
 		if (strlen(loc)<1 || loc[strlen(loc)-1]=='/') return;
-		uint pos = location_input->position();
+		unsigned pos = location_input->position();
 		if (pos!=strlen(loc)) return; // cursor in the middle
 		int mark = location_input->mark();
 
@@ -744,7 +749,7 @@ void location_input_cb(Fl_Widget*, void*) {
 			if (i<=view->size()) {
 				location_input->replace(pos, mark, view->path(i)+pos);
 				location_input->position(pos);
-				location_input->mark(strlen(view->path(i)));
+				location_input->mark((int)strlen(view->path(i)));
 			}
 			// else beep();  ??
 
@@ -777,7 +782,7 @@ void location_input_cb(Fl_Widget*, void*) {
 			if (i<size) {
 				location_input->replace(pos, mark, p+pos);
 				location_input->position(pos);
-				location_input->mark(strlen(p));
+				location_input->mark((int)strlen(p));
 			}
 			// else beep();  ??
 		}
@@ -806,7 +811,7 @@ void directory_change_cb(const char* dir, const char* what_changed, int flags, v
 	char fullpath[FL_PATH_MAX];
 	snprintf (fullpath,FL_PATH_MAX-1,"%s%s",dir,what_changed);
 
-	if (stat64(fullpath,&stat_buffer)) return; // happens when user has traverse but not read privilege
+	if (stat(fullpath,&stat_buffer)) return; // happens when user has traverse but not read privilege
 
 	FileItem *item = new FileItem;
 	item->name = what_changed;
@@ -834,7 +839,7 @@ void directory_change_cb(const char* dir, const char* what_changed, int flags, v
 	Fl::check(); // update interface to give time for mimetype resolver
 
 	mime_resolver.set(fullpath);
-	edelib::String desc,icon;
+	string desc,icon;
 	desc = mime_resolver.comment();
 	// First letter of desc should be upper case:
 	if (desc.length()>0 && desc[0]>='a' && desc[0]<='z') desc[0] = desc[0]-'a'+'A';
@@ -853,8 +858,9 @@ void directory_change_cb(const char* dir, const char* what_changed, int flags, v
 
 void load_preferences() {
 	bool icons_view=false;
-	int winw, winh;
-
+	int winw = 200;
+	int winh = 400;
+#if 0
 	app_config.load("ede/efiler");
 	app_config.get("gui","show_hidden",showhidden,false); // Show hidden files
 	app_config.get("gui","dirs_first",dirsfirst,true); // Directories before ordinary files
@@ -865,7 +871,7 @@ void load_preferences() {
 
 	app_config.get("gui","window_width",winw,600); // Window dimensions
 	app_config.get("gui","window_height",winh,400);
-
+#endif
 	// Apply settings
 	if (winw!=default_window_width || winh!=default_window_height)
 		win->resize(win->x(),win->y(),winw,winh);
@@ -1113,8 +1119,9 @@ FL_NORMAL_SIZE=12;
 
 	// Set application (window manager) icon
 	// TODO: use icon from theme (e.g. system-file-manager)
+#if 0
 	win->window_icon(efiler_xpm); // new method in edelib::Window
-
+#endif
 	// We need to init dirtree before loading anything into it
 	dirtree->init();
 	dirtree->show_hidden(showhidden);

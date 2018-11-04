@@ -18,7 +18,8 @@
 #include <FL/Fl_Input.H>
 #include <FL/Fl_Image.H>
 
-#include <edelib/String.h>
+#include <string>
+using namespace std;
 
 #include "EDE_Browser.h"
 //#include "EDE_FileView.h"
@@ -56,10 +57,10 @@ private:
 	void finish_rename();
 
 	// Try various names and sizes for icons
-	Fl_Image* try_icon(edelib::String icon_name);
+	Fl_Image* try_icon(string icon_name);
 
 	// Find row number corresponding to realpath (encoded in data())
-	int findrow(edelib::String realpath) {
+	int findrow(string realpath) {
 		for (int i=1; i<=size(); i++) {
 			char *tmp = (char*)data(i);
 			if (realpath==tmp) return i;

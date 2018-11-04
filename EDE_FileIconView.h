@@ -15,13 +15,14 @@
 #define EDE_FileIconView_H
 
 
-#include <edelib/String.h>
+#include <string>
+using namespace std;
 
 //#include "EDE_FileView.h"
 
 
 // comment this to use edelib::ExpandableGroup
-//#define USE_FLU_WRAP_GROUP
+#define USE_FLU_WRAP_GROUP
 
 #ifdef USE_FLU_WRAP_GROUP
  #include "Flu_Wrap_Group.h"
@@ -52,7 +53,7 @@ private:
 	int select_x1,select_y1,select_x2,select_y2;
 
 	// Find the widget corresponding to real path (encoded in user_data())
-	Fl_Widget* find_icon(edelib::String realpath) {
+	Fl_Widget* find_icon(string realpath) {
 		for (int i=0; i<children(); i++) {
 			Fl_Widget* w = child(i);
 			char *tmp = (char*)w->user_data();
@@ -78,7 +79,7 @@ private:
 	void finish_rename();
 
 	// Try various names and sizes for icons
-	Fl_Image* try_icon(edelib::String icon_name);
+	Fl_Image* try_icon(string icon_name);
 
 
 public:

@@ -16,7 +16,7 @@
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
-
+#include <stdint.h>
 #include <FL/Fl.H>
 #include <FL/Fl_Window.H>
 
@@ -117,7 +117,7 @@ void EDE_Browser::sort(int column) {
 #define SYMLEN 6
 void EDE_Browser::sort(int column, SortType type, bool reverse) {
 	char *h=column_header_;
-	int hlen=strlen(h);
+	size_t hlen=strlen(h);
 	char colchar = Fl_Icon_Browser::column_char();
 
 	// FIXME sort() shouldn't call column_header() because that calls show_header() and that
@@ -131,7 +131,9 @@ void EDE_Browser::sort(int column, SortType type, bool reverse) {
 		bool found=false;
 		while ((delim=strchr(h, colchar))) {
 			if (col==sort_column) {
-				for (uint i=0; i<=strlen(delim); i++) delim[i-SYMLEN+1]=delim[i];
+				for (unsigned i=0; i<=strlen(delim); i++) 
+				{	delim[i-SYMLEN+1]=delim[i];
+				}
 				found=true;
 				break;
 			}
@@ -168,6 +170,7 @@ void EDE_Browser::sort(int column, SortType type, bool reverse) {
 		if (!found && col==column) // Just append symbol to string
 			snprintf(newheader, hlen+SYMLEN,"%s%s",column_header_,sym);
 	} else {
+#pragma warning(disable : 4996)
 		strncpy (newheader, column_header_, hlen);
 		newheader[hlen]='\0';
 	}
